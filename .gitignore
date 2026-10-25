@@ -1,0 +1,11 @@
+# Build CubeIDE
+Debug/
+Release/
+
+# Python
+__pycache__/
+*.pyc
+
+# Chei: cheia privata nu are voie in repo
+*.pem
+*.key

@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>STM32 Cryptographic Middleware</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">@charset "UTF-8";:root {--fore-color: #03234b;--secondary-fore-color: #03234b;--back-color: #ffffff;--secondary-back-color: #ffffff;--blockquote-color: #e6007e;--pre-color: #e6007e;--border-color: #3cb4e6;--secondary-border-color: #3cb4e6;--heading-ratio: 1.2;--universal-margin: 0.5rem;--universal-padding: 0.25rem;--universal-border-radius: 0.075rem;--background-margin: 1.5%;--a-link-color: #3cb4e6;--a-visited-color: #8c0078; }html {font-size: 13.5px; }a, b, del, em, i, ins, q, span, strong, u {font-size: 1em; }html, * {font-family: -apple-system, BlinkMacSystemFont, Helvetica, arial, sans-serif;line-height: 1.25;-webkit-text-size-adjust: 100%; }* {font-size: 1rem; }body {margin: 0;color: var(--fore-color);@background: var(--back-color);background: var(--back-color) linear-gradient(#ffd200, #ffd200) repeat-y left top;background-size: var(--background-margin);}details {display: block; }summary {display: list-item; }abbr[title] {border-bottom: none;text-decoration: underline dotted; }input {overflow: visible; }img {max-width: 100%;height: auto; }h1, h2, h3, h4, h5, h6 {line-height: 1.25;margin: calc(1.5 * var(--universal-margin)) var(--universal-margin);font-weight: 400; }h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {color: var(--secondary-fore-color);display: block;margin-top: -0.25rem; }h1 {font-size: calc(1rem * var(--heading-ratio) * var(--heading-ratio) * var(--heading-ratio)); }h2 {font-size: calc(1rem * var(--heading-ratio) * var(--heading-ratio) );border-style: none none solid none ; border-width: thin;border-color: var(--border-color); }h3 {font-size: calc(1rem * var(--heading-ratio) ); }h4 {font-size: calc(1rem * var(--heading-ratio)); }h5 {font-size: 1rem; }h6 {font-size: calc(1rem / var(--heading-ratio)); }p {margin: var(--universal-margin); }ol, ul {margin: var(--universal-margin);padding-left: calc(3 * var(--universal-margin)); }b, strong {font-weight: 700; }hr {box-sizing: content-box;border: 0;line-height: 1.25em;margin: var(--universal-margin);height: 0.0714285714rem;background: linear-gradient(to right, transparent, var(--border-color) 20%, var(--border-color) 80%, transparent); }blockquote {display: block;position: relative;font-style: italic;color: var(--secondary-fore-color);margin: var(--universal-margin);padding: calc(3 * var(--universal-padding));border: 0.0714285714rem solid var(--secondary-border-color);border-left: 0.3rem solid var(--blockquote-color);border-radius: 0 var(--universal-border-radius) var(--universal-border-radius) 0; }blockquote:before {position: absolute;top: calc(0rem - var(--universal-padding));left: 0;font-family: sans-serif;font-size: 2rem;font-weight: 800;content: "\201c";color: var(--blockquote-color); }blockquote[cite]:after {font-style: normal;font-size: 0.75em;font-weight: 700;content: "\a— " attr(cite);white-space: pre; }code, kbd, pre, samp {font-family: Menlo, Consolas, monospace;font-size: 0.85em; }code {background: var(--secondary-back-color);border-radius: var(--universal-border-radius);padding: calc(var(--universal-padding) / 4) calc(var(--universal-padding) / 2); }kbd {background: var(--fore-color);color: var(--back-color);border-radius: var(--universal-border-radius);padding: calc(var(--universal-padding) / 4) calc(var(--universal-padding) / 2); }pre {overflow: auto;background: var(--secondary-back-color);padding: calc(1.5 * var(--universal-padding));margin: var(--universal-margin);border: 0.0714285714rem solid var(--secondary-border-color);border-left: 0.2857142857rem solid var(--pre-color);border-radius: 0 var(--universal-border-radius) var(--universal-border-radius) 0; }sup, sub, code, kbd {line-height: 0;position: relative;vertical-align: baseline; }small, sup, sub, figcaption {font-size: 0.75em; }sup {top: -0.5em; }sub {bottom: -0.25em; }figure {margin: var(--universal-margin); }figcaption {color: var(--secondary-fore-color); }a {text-decoration: none; }a:link {color: var(--a-link-color); }a:visited {color: var(--a-visited-color); }a:hover, a:focus {text-decoration: underline; }.container {margin: 0 auto;padding: 0 calc(1.5 * var(--universal-padding)); }.row {box-sizing: border-box;display: flex;flex: 0 1 auto;flex-flow: row wrap;margin: 0 0 0 var(--background-margin); }.col-sm,[class^='col-sm-'],[class^='col-sm-offset-'],.row[class*='cols-sm-'] > * {box-sizing: border-box;flex: 0 0 auto;padding: 0 calc(var(--universal-padding) / 2); }.col-sm,.row.cols-sm > * {max-width: 100%;flex-grow: 1;flex-basis: 0; }.col-sm-1,.row.cols-sm-1 > * {max-width: 8.3333333333%;flex-basis: 8.3333333333%; }.col-sm-offset-0 {margin-left: 0; }.col-sm-2,.row.cols-sm-2 > * {max-width: 16.6666666667%;flex-basis: 16.6666666667%; }.col-sm-offset-1 {margin-left: 8.3333333333%; }.col-sm-3,.row.cols-sm-3 > * {max-width: 25%;flex-basis: 25%; }.col-sm-offset-2 {margin-left: 16.6666666667%; }.col-sm-4,.row.cols-sm-4 > * {max-width: 33.3333333333%;flex-basis: 33.3333333333%; }.col-sm-offset-3 {margin-left: 25%; }.col-sm-5,.row.cols-sm-5 > * {max-width: 41.6666666667%;flex-basis: 41.6666666667%; }.col-sm-offset-4 {margin-left: 33.3333333333%; }.col-sm-6,.row.cols-sm-6 > * {max-width: 50%;flex-basis: 50%; }.col-sm-offset-5 {margin-left: 41.6666666667%; }.col-sm-7,.row.cols-sm-7 > * {max-width: 58.3333333333%;flex-basis: 58.3333333333%; }.col-sm-offset-6 {margin-left: 50%; }.col-sm-8,.row.cols-sm-8 > * {max-width: 66.6666666667%;flex-basis: 66.6666666667%; }.col-sm-offset-7 {margin-left: 58.3333333333%; }.col-sm-9,.row.cols-sm-9 > * {max-width: 75%;flex-basis: 75%; }.col-sm-offset-8 {margin-left: 66.6666666667%; }.col-sm-10,.row.cols-sm-10 > * {max-width: 83.3333333333%;flex-basis: 83.3333333333%; }.col-sm-offset-9 {margin-left: 75%; }.col-sm-11,.row.cols-sm-11 > * {max-width: 91.6666666667%;flex-basis: 91.6666666667%; }.col-sm-offset-10 {margin-left: 83.3333333333%; }.col-sm-12,.row.cols-sm-12 > * {max-width: 100%;flex-basis: 100%; }.col-sm-offset-11 {margin-left: 91.6666666667%; }.col-sm-normal {order: initial; }.col-sm-first {order: -999; }.col-sm-last {order: 999; }@media screen and (min-width: 500px) {.col-md,[class^='col-md-'],[class^='col-md-offset-'],.row[class*='cols-md-'] > * {box-sizing: border-box;flex: 0 0 auto;padding: 0 calc(var(--universal-padding) / 2); }.col-md,.row.cols-md > * {max-width: 100%;flex-grow: 1;flex-basis: 0; }.col-md-1,.row.cols-md-1 > * {max-width: 8.3333333333%;flex-basis: 8.3333333333%; }.col-md-offset-0 {margin-left: 0; }.col-md-2,.row.cols-md-2 > * {max-width: 16.6666666667%;flex-basis: 16.6666666667%; }.col-md-offset-1 {margin-left: 8.3333333333%; }.col-md-3,.row.cols-md-3 > * {max-width: 25%;flex-basis: 25%; }.col-md-offset-2 {margin-left: 16.6666666667%; }.col-md-4,.row.cols-md-4 > * {max-width: 33.3333333333%;flex-basis: 33.3333333333%; }.col-md-offset-3 {margin-left: 25%; }.col-md-5,.row.cols-md-5 > * {max-width: 41.6666666667%;flex-basis: 41.6666666667%; }.col-md-offset-4 {margin-left: 33.3333333333%; }.col-md-6,.row.cols-md-6 > * {max-width: 50%;flex-basis: 50%; }.col-md-offset-5 {margin-left: 41.6666666667%; }.col-md-7,.row.cols-md-7 > * {max-width: 58.3333333333%;flex-basis: 58.3333333333%; }.col-md-offset-6 {margin-left: 50%; }.col-md-8,.row.cols-md-8 > * {max-width: 66.6666666667%;flex-basis: 66.6666666667%; }.col-md-offset-7 {margin-left: 58.3333333333%; }.col-md-9,.row.cols-md-9 > * {max-width: 75%;flex-basis: 75%; }.col-md-offset-8 {margin-left: 66.6666666667%; }.col-md-10,.row.cols-md-10 > * {max-width: 83.3333333333%;flex-basis: 83.3333333333%; }.col-md-offset-9 {margin-left: 75%; }.col-md-11,.row.cols-md-11 > * {max-width: 91.6666666667%;flex-basis: 91.6666666667%; }.col-md-offset-10 {margin-left: 83.3333333333%; }.col-md-12,.row.cols-md-12 > * {max-width: 100%;flex-basis: 100%; }.col-md-offset-11 {margin-left: 91.6666666667%; }.col-md-normal {order: initial; }.col-md-first {order: -999; }.col-md-last {order: 999; } }@media screen and (min-width: 1280px) {.col-lg,[class^='col-lg-'],[class^='col-lg-offset-'],.row[class*='cols-lg-'] > * {box-sizing: border-box;flex: 0 0 auto;padding: 0 calc(var(--universal-padding) / 2); }.col-lg,.row.cols-lg > * {max-width: 100%;flex-grow: 1;flex-basis: 0; }.col-lg-1,.row.cols-lg-1 > * {max-width: 8.3333333333%;flex-basis: 8.3333333333%; }.col-lg-offset-0 {margin-left: 0; }.col-lg-2,.row.cols-lg-2 > * {max-width: 16.6666666667%;flex-basis: 16.6666666667%; }.col-lg-offset-1 {margin-left: 8.3333333333%; }.col-lg-3,.row.cols-lg-3 > * {max-width: 25%;flex-basis: 25%; }.col-lg-offset-2 {margin-left: 16.6666666667%; }.col-lg-4,.row.cols-lg-4 > * {max-width: 33.3333333333%;flex-basis: 33.3333333333%; }.col-lg-offset-3 {margin-left: 25%; }.col-lg-5,.row.cols-lg-5 > * {max-width: 41.6666666667%;flex-basis: 41.6666666667%; }.col-lg-offset-4 {margin-left: 33.3333333333%; }.col-lg-6,.row.cols-lg-6 > * {max-width: 50%;flex-basis: 50%; }.col-lg-offset-5 {margin-left: 41.6666666667%; }.col-lg-7,.row.cols-lg-7 > * {max-width: 58.3333333333%;flex-basis: 58.3333333333%; }.col-lg-offset-6 {margin-left: 50%; }.col-lg-8,.row.cols-lg-8 > * {max-width: 66.6666666667%;flex-basis: 66.6666666667%; }.col-lg-offset-7 {margin-left: 58.3333333333%; }.col-lg-9,.row.cols-lg-9 > * {max-width: 75%;flex-basis: 75%; }.col-lg-offset-8 {margin-left: 66.6666666667%; }.col-lg-10,.row.cols-lg-10 > * {max-width: 83.3333333333%;flex-basis: 83.3333333333%; }.col-lg-offset-9 {margin-left: 75%; }.col-lg-11,.row.cols-lg-11 > * {max-width: 91.6666666667%;flex-basis: 91.6666666667%; }.col-lg-offset-10 {margin-left: 83.3333333333%; }.col-lg-12,.row.cols-lg-12 > * {max-width: 100%;flex-basis: 100%; }.col-lg-offset-11 {margin-left: 91.6666666667%; }.col-lg-normal {order: initial; }.col-lg-first {order: -999; }.col-lg-last {order: 999; } }:root {--card-back-color: #3cb4e6;--card-fore-color: #03234b;--card-border-color: #03234b; }.card {display: flex;flex-direction: column;justify-content: space-between;align-self: center;position: relative;width: 100%;background: var(--card-back-color);color: var(--card-fore-color);border: 0.0714285714rem solid var(--card-border-color);border-radius: var(--universal-border-radius);margin: var(--universal-margin);overflow: hidden; }@media screen and (min-width: 320px) {.card {max-width: 320px; } }.card > .sectione {background: var(--card-back-color);color: var(--card-fore-color);box-sizing: border-box;margin: 0;border: 0;border-radius: 0;border-bottom: 0.0714285714rem solid var(--card-border-color);padding: var(--universal-padding);width: 100%; }.card > .sectione.media {height: 200px;padding: 0;-o-object-fit: cover;object-fit: cover; }.card > .sectione:last-child {border-bottom: 0; }@media screen and (min-width: 240px) {.card.small {max-width: 240px; } }@media screen and (min-width: 480px) {.card.large {max-width: 480px; } }.card.fluid {max-width: 100%;width: auto; }.card.warning {--card-back-color: #e5b8b7;--card-fore-color: #3b234b;--card-border-color: #8c0078; }.card.error {--card-back-color: #464650;--card-fore-color: #ffffff;--card-border-color: #8c0078; }.card > .sectione.dark {--card-back-color: #3b234b;--card-fore-color: #ffffff; }.card > .sectione.double-padded {padding: calc(1.5 * var(--universal-padding)); }:root {--form-back-color: #ffe97f;--form-fore-color: #03234b;--form-border-color: #3cb4e6;--input-back-color: #ffffff;--input-fore-color: #03234b;--input-border-color: #3cb4e6;--input-focus-color: #0288d1;--input-invalid-color: #d32f2f;--button-back-color: #e2e2e2;--button-hover-back-color: #dcdcdc;--button-fore-color: #212121;--button-border-color: transparent;--button-hover-border-color: transparent;--button-group-border-color: rgba(124, 124, 124, 0.54); }form {background: var(--form-back-color);color: var(--form-fore-color);border: 0.0714285714rem solid var(--form-border-color);border-radius: var(--universal-border-radius);margin: var(--universal-margin);padding: calc(2 * var(--universal-padding)) var(--universal-padding); }fieldset {border: 0.0714285714rem solid var(--form-border-color);border-radius: var(--universal-border-radius);margin: calc(var(--universal-margin) / 4);padding: var(--universal-padding); }legend {box-sizing: border-box;display: table;max-width: 100%;white-space: normal;font-weight: 500;padding: calc(var(--universal-padding) / 2); }label {padding: calc(var(--universal-padding) / 2) var(--universal-padding); }.input-group {display: inline-block; }.input-group.fluid {display: flex;align-items: center;justify-content: center; }.input-group.fluid > input {max-width: 100%;flex-grow: 1;flex-basis: 0px; }@media screen and (max-width: 499px) {.input-group.fluid {align-items: stretch;flex-direction: column; } }.input-group.vertical {display: flex;align-items: stretch;flex-direction: column; }.input-group.vertical > input {max-width: 100%;flex-grow: 1;flex-basis: 0px; }[type="number"]::-webkit-inner-spin-button, [type="number"]::-webkit-outer-spin-button {height: auto; }[type="search"] {-webkit-appearance: textfield;outline-offset: -2px; }[type="search"]::-webkit-search-cancel-button,[type="search"]::-webkit-search-decoration {-webkit-appearance: none; }input:not([type]), [type="text"], [type="email"], [type="number"], [type="search"],[type="password"], [type="url"], [type="tel"], [type="checkbox"], [type="radio"], textarea, select {box-sizing: border-box;background: var(--input-back-color);color: var(--input-fore-color);border: 0.0714285714rem solid var(--input-border-color);border-radius: var(--universal-border-radius);margin: calc(var(--universal-margin) / 2);padding: var(--universal-padding) calc(1.5 * var(--universal-padding)); }input:not([type="button"]):not([type="submit"]):not([type="reset"]):hover, input:not([type="button"]):not([type="submit"]):not([type="reset"]):focus, textarea:hover, textarea:focus, select:hover, select:focus {border-color: var(--input-focus-color);box-shadow: none; }input:not([type="button"]):not([type="submit"]):not([type="reset"]):invalid, input:not([type="button"]):not([type="submit"]):not([type="reset"]):focus:invalid, textarea:invalid, textarea:focus:invalid, select:invalid, select:focus:invalid {border-color: var(--input-invalid-color);box-shadow: none; }input:not([type="button"]):not([type="submit"]):not([type="reset"])[readonly], textarea[readonly], select[readonly] {background: var(--secondary-back-color); }select {max-width: 100%; }option {overflow: hidden;text-overflow: ellipsis; }[type="checkbox"], [type="radio"] {-webkit-appearance: none;-moz-appearance: none;appearance: none;position: relative;height: calc(1rem + var(--universal-padding) / 2);width: calc(1rem + var(--universal-padding) / 2);vertical-align: text-bottom;padding: 0;flex-basis: calc(1rem + var(--universal-padding) / 2) !important;flex-grow: 0 !important; }[type="checkbox"]:checked:before, [type="radio"]:checked:before {position: absolute; }[type="checkbox"]:checked:before {content: '\2713';font-family: sans-serif;font-size: calc(1rem + var(--universal-padding) / 2);top: calc(0rem - var(--universal-padding));left: calc(var(--universal-padding) / 4); }[type="radio"] {border-radius: 100%; }[type="radio"]:checked:before {border-radius: 100%;content: '';top: calc(0.0714285714rem + var(--universal-padding) / 2);left: calc(0.0714285714rem + var(--universal-padding) / 2);background: var(--input-fore-color);width: 0.5rem;height: 0.5rem; }:placeholder-shown {color: var(--input-fore-color); }::-ms-placeholder {color: var(--input-fore-color);opacity: 0.54; }button::-moz-focus-inner, [type="button"]::-moz-focus-inner, [type="reset"]::-moz-focus-inner, [type="submit"]::-moz-focus-inner {border-style: none;padding: 0; }button, html [type="button"], [type="reset"], [type="submit"] {-webkit-appearance: button; }button {overflow: visible;text-transform: none; }button, [type="button"], [type="submit"], [type="reset"],a.button, label.button, .button,a[role="button"], label[role="button"], [role="button"] {display: inline-block;background: var(--button-back-color);color: var(--button-fore-color);border: 0.0714285714rem solid var(--button-border-color);border-radius: var(--universal-border-radius);padding: var(--universal-padding) calc(1.5 * var(--universal-padding));margin: var(--universal-margin);text-decoration: none;cursor: pointer;transition: background 0.3s; }button:hover, button:focus, [type="button"]:hover, [type="button"]:focus, [type="submit"]:hover, [type="submit"]:focus, [type="reset"]:hover, [type="reset"]:focus,a.button:hover,a.button:focus, label.button:hover, label.button:focus, .button:hover, .button:focus,a[role="button"]:hover,a[role="button"]:focus, label[role="button"]:hover, label[role="button"]:focus, [role="button"]:hover, [role="button"]:focus {background: var(--button-hover-back-color);border-color: var(--button-hover-border-color); }input:disabled, input[disabled], textarea:disabled, textarea[disabled], select:disabled, select[disabled], button:disabled, button[disabled], .button:disabled, .button[disabled], [role="button"]:disabled, [role="button"][disabled] {cursor: not-allowed;opacity: 0.75; }.button-group {display: flex;border: 0.0714285714rem solid var(--button-group-border-color);border-radius: var(--universal-border-radius);margin: var(--universal-margin); }.button-group > button, .button-group [type="button"], .button-group > [type="submit"], .button-group > [type="reset"], .button-group > .button, .button-group > [role="button"] {margin: 0;max-width: 100%;flex: 1 1 auto;text-align: center;border: 0;border-radius: 0;box-shadow: none; }.button-group > :not(:first-child) {border-left: 0.0714285714rem solid var(--button-group-border-color); }@media screen and (max-width: 499px) {.button-group {flex-direction: column; }.button-group > :not(:first-child) {border: 0;border-top: 0.0714285714rem solid var(--button-group-border-color); } }button.primary, [type="button"].primary, [type="submit"].primary, [type="reset"].primary, .button.primary, [role="button"].primary {--button-back-color: #1976d2;--button-fore-color: #f8f8f8; }button.primary:hover, button.primary:focus, [type="button"].primary:hover, [type="button"].primary:focus, [type="submit"].primary:hover, [type="submit"].primary:focus, [type="reset"].primary:hover, [type="reset"].primary:focus, .button.primary:hover, .button.primary:focus, [role="button"].primary:hover, [role="button"].primary:focus {--button-hover-back-color: #1565c0; }button.secondary, [type="button"].secondary, [type="submit"].secondary, [type="reset"].secondary, .button.secondary, [role="button"].secondary {--button-back-color: #d32f2f;--button-fore-color: #f8f8f8; }button.secondary:hover, button.secondary:focus, [type="button"].secondary:hover, [type="button"].secondary:focus, [type="submit"].secondary:hover, [type="submit"].secondary:focus, [type="reset"].secondary:hover, [type="reset"].secondary:focus, .button.secondary:hover, .button.secondary:focus, [role="button"].secondary:hover, [role="button"].secondary:focus {--button-hover-back-color: #c62828; }button.tertiary, [type="button"].tertiary, [type="submit"].tertiary, [type="reset"].tertiary, .button.tertiary, [role="button"].tertiary {--button-back-color: #308732;--button-fore-color: #f8f8f8; }button.tertiary:hover, button.tertiary:focus, [type="button"].tertiary:hover, [type="button"].tertiary:focus, [type="submit"].tertiary:hover, [type="submit"].tertiary:focus, [type="reset"].tertiary:hover, [type="reset"].tertiary:focus, .button.tertiary:hover, .button.tertiary:focus, [role="button"].tertiary:hover, [role="button"].tertiary:focus {--button-hover-back-color: #277529; }button.inverse, [type="button"].inverse, [type="submit"].inverse, [type="reset"].inverse, .button.inverse, [role="button"].inverse {--button-back-color: #212121;--button-fore-color: #f8f8f8; }button.inverse:hover, button.inverse:focus, [type="button"].inverse:hover, [type="button"].inverse:focus, [type="submit"].inverse:hover, [type="submit"].inverse:focus, [type="reset"].inverse:hover, [type="reset"].inverse:focus, .button.inverse:hover, .button.inverse:focus, [role="button"].inverse:hover, [role="button"].inverse:focus {--button-hover-back-color: #111; }button.small, [type="button"].small, [type="submit"].small, [type="reset"].small, .button.small, [role="button"].small {padding: calc(0.5 * var(--universal-padding)) calc(0.75 * var(--universal-padding));margin: var(--universal-margin); }button.large, [type="button"].large, [type="submit"].large, [type="reset"].large, .button.large, [role="button"].large {padding: calc(1.5 * var(--universal-padding)) calc(2 * var(--universal-padding));margin: var(--universal-margin); }:root {--header-back-color: #03234b;--header-hover-back-color: #ffd200;--header-fore-color: #ffffff;--header-border-color: #3cb4e6;--nav-back-color: #ffffff;--nav-hover-back-color: #ffe97f;--nav-fore-color: #e6007e;--nav-border-color: #3cb4e6;--nav-link-color: #3cb4e6;--footer-fore-color: #ffffff;--footer-back-color: #03234b;--footer-border-color: #3cb4e6;--footer-link-color: #3cb4e6;--drawer-back-color: #ffffff;--drawer-hover-back-color: #ffe97f;--drawer-border-color: #3cb4e6;--drawer-close-color: #e6007e; }header {height: 2.75rem;background: var(--header-back-color);color: var(--header-fore-color);border-bottom: 0.0714285714rem solid var(--header-border-color);padding: calc(var(--universal-padding) / 4) 0;white-space: nowrap;overflow-x: auto;overflow-y: hidden; }header.row {box-sizing: content-box; }header .logo {color: var(--header-fore-color);font-size: 1.75rem;padding: var(--universal-padding) calc(2 * var(--universal-padding));text-decoration: none; }header button, header [type="button"], header .button, header [role="button"] {box-sizing: border-box;position: relative;top: calc(0rem - var(--universal-padding) / 4);height: calc(3.1875rem + var(--universal-padding) / 2);background: var(--header-back-color);line-height: calc(3.1875rem - var(--universal-padding) * 1.5);text-align: center;color: var(--header-fore-color);border: 0;border-radius: 0;margin: 0;text-transform: uppercase; }header button:hover, header button:focus, header [type="button"]:hover, header [type="button"]:focus, header .button:hover, header .button:focus, header [role="button"]:hover, header [role="button"]:focus {background: var(--header-hover-back-color); }nav {background: var(--nav-back-color);color: var(--nav-fore-color);border: 0.0714285714rem solid var(--nav-border-color);border-radius: var(--universal-border-radius);margin: var(--universal-margin); }nav * {padding: var(--universal-padding) calc(1.5 * var(--universal-padding)); }nav a, nav a:visited {display: block;color: var(--nav-link-color);border-radius: var(--universal-border-radius);transition: background 0.3s; }nav a:hover, nav a:focus, nav a:visited:hover, nav a:visited:focus {text-decoration: none;background: var(--nav-hover-back-color); }nav .sublink-1 {position: relative;margin-left: calc(2 * var(--universal-padding)); }nav .sublink-1:before {position: absolute;left: calc(var(--universal-padding) - 1 * var(--universal-padding));top: -0.0714285714rem;content: '';height: 100%;border: 0.0714285714rem solid var(--nav-border-color);border-left: 0; }nav .sublink-2 {position: relative;margin-left: calc(4 * var(--universal-padding)); }nav .sublink-2:before {position: absolute;left: calc(var(--universal-padding) - 3 * var(--universal-padding));top: -0.0714285714rem;content: '';height: 100%;border: 0.0714285714rem solid var(--nav-border-color);border-left: 0; }footer {background: var(--footer-back-color);color: var(--footer-fore-color);border-top: 0.0714285714rem solid var(--footer-border-color);padding: calc(2 * var(--universal-padding)) var(--universal-padding);font-size: 0.875rem; }footer a, footer a:visited {color: var(--footer-link-color); }header.sticky {position: -webkit-sticky;position: sticky;z-index: 1101;top: 0; }footer.sticky {position: -webkit-sticky;position: sticky;z-index: 1101;bottom: 0; }.drawer-toggle:before {display: inline-block;position: relative;vertical-align: bottom;content: '\00a0\2261\00a0';font-family: sans-serif;font-size: 1.5em; }@media screen and (min-width: 500px) {.drawer-toggle:not(.persistent) {display: none; } }[type="checkbox"].drawer {height: 1px;width: 1px;margin: -1px;overflow: hidden;position: absolute;clip: rect(0 0 0 0);-webkit-clip-path: inset(100%);clip-path: inset(100%); }[type="checkbox"].drawer + * {display: block;box-sizing: border-box;position: fixed;top: 0;width: 320px;height: 100vh;overflow-y: auto;background: var(--drawer-back-color);border: 0.0714285714rem solid var(--drawer-border-color);border-radius: 0;margin: 0;z-index: 1110;right: -320px;transition: right 0.3s; }[type="checkbox"].drawer + * .drawer-close {position: absolute;top: var(--universal-margin);right: var(--universal-margin);z-index: 1111;width: 2rem;height: 2rem;border-radius: var(--universal-border-radius);padding: var(--universal-padding);margin: 0;cursor: pointer;transition: background 0.3s; }[type="checkbox"].drawer + * .drawer-close:before {display: block;content: '\00D7';color: var(--drawer-close-color);position: relative;font-family: sans-serif;font-size: 2rem;line-height: 1;text-align: center; }[type="checkbox"].drawer + * .drawer-close:hover, [type="checkbox"].drawer + * .drawer-close:focus {background: var(--drawer-hover-back-color); }@media screen and (max-width: 320px) {[type="checkbox"].drawer + * {width: 100%; } }[type="checkbox"].drawer:checked + * {right: 0; }@media screen and (min-width: 500px) {[type="checkbox"].drawer:not(.persistent) + * {position: static;height: 100%;z-index: 1100; }[type="checkbox"].drawer:not(.persistent) + * .drawer-close {display: none; } }:root {--table-border-color: #03234b;--table-border-separator-color: #03234b;--table-head-back-color: #03234b;--table-head-fore-color: #ffffff;--table-body-back-color: #ffffff;--table-body-fore-color: #03234b;--table-body-alt-back-color: #f4f4f4; }table {border-collapse: separate;border-spacing: 0;margin: 0;display: flex;flex: 0 1 auto;flex-flow: row wrap;padding: var(--universal-padding);padding-top: 0; }table caption {font-size: 1rem;margin: calc(2 * var(--universal-margin)) 0;max-width: 100%;flex: 0 0 100%; }table thead, table tbody {display: flex;flex-flow: row wrap;border: 0.0714285714rem solid var(--table-border-color); }table thead {z-index: 999;border-radius: var(--universal-border-radius) var(--universal-border-radius) 0 0;border-bottom: 0.0714285714rem solid var(--table-border-separator-color); }table tbody {border-top: 0;margin-top: calc(0 - var(--universal-margin));border-radius: 0 0 var(--universal-border-radius) var(--universal-border-radius); }table tr {display: flex;padding: 0; }table th, table td {padding: calc(0.5 * var(--universal-padding));font-size: 0.9rem; }table th {text-align: left;background: var(--table-head-back-color);color: var(--table-head-fore-color); }table td {background: var(--table-body-back-color);color: var(--table-body-fore-color);border-top: 0.0714285714rem solid var(--table-border-color); }table:not(.horizontal) {overflow: auto;max-height: 100%; }table:not(.horizontal) thead, table:not(.horizontal) tbody {max-width: 100%;flex: 0 0 100%; }table:not(.horizontal) tr {flex-flow: row wrap;flex: 0 0 100%; }table:not(.horizontal) th, table:not(.horizontal) td {flex: 1 0 0%;overflow: hidden;text-overflow: ellipsis; }table:not(.horizontal) thead {position: sticky;top: 0; }table:not(.horizontal) tbody tr:first-child td {border-top: 0; }table.horizontal {border: 0; }table.horizontal thead, table.horizontal tbody {border: 0;flex: .2 0 0;flex-flow: row nowrap; }table.horizontal tbody {overflow: auto;justify-content: space-between;flex: .8 0 0;margin-left: 0;padding-bottom: calc(var(--universal-padding) / 4); }table.horizontal tr {flex-direction: column;flex: 1 0 auto; }table.horizontal th, table.horizontal td {width: auto;border: 0;border-bottom: 0.0714285714rem solid var(--table-border-color); }table.horizontal th:not(:first-child), table.horizontal td:not(:first-child) {border-top: 0; }table.horizontal th {text-align: right;border-left: 0.0714285714rem solid var(--table-border-color);border-right: 0.0714285714rem solid var(--table-border-separator-color); }table.horizontal thead tr:first-child {padding-left: 0; }table.horizontal th:first-child, table.horizontal td:first-child {border-top: 0.0714285714rem solid var(--table-border-color); }table.horizontal tbody tr:last-child td {border-right: 0.0714285714rem solid var(--table-border-color); }table.horizontal tbody tr:last-child td:first-child {border-top-right-radius: 0.25rem; }table.horizontal tbody tr:last-child td:last-child {border-bottom-right-radius: 0.25rem; }table.horizontal thead tr:first-child th:first-child {border-top-left-radius: 0.25rem; }table.horizontal thead tr:first-child th:last-child {border-bottom-left-radius: 0.25rem; }@media screen and (max-width: 499px) {table, table.horizontal {border-collapse: collapse;border: 0;width: 100%;display: table; }table thead, table th, table.horizontal thead, table.horizontal th {border: 0;height: 1px;width: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;clip: rect(0 0 0 0);-webkit-clip-path: inset(100%);clip-path: inset(100%); }table tbody, table.horizontal tbody {border: 0;display: table-row-group; }table tr, table.horizontal tr {display: block;border: 0.0714285714rem solid var(--table-border-color);border-radius: var(--universal-border-radius);background: #ffffff;padding: var(--universal-padding);margin: var(--universal-margin);margin-bottom: calc(1 * var(--universal-margin)); }table th, table td, table.horizontal th, table.horizontal td {width: auto; }table td, table.horizontal td {display: block;border: 0;text-align: right; }table td:before, table.horizontal td:before {content: attr(data-label);float: left;font-weight: 600; }table th:first-child, table td:first-child, table.horizontal th:first-child, table.horizontal td:first-child {border-top: 0; }table tbody tr:last-child td, table.horizontal tbody tr:last-child td {border-right: 0; } }table tr:nth-of-type(2n) > td {background: var(--table-body-alt-back-color); }@media screen and (max-width: 500px) {table tr:nth-of-type(2n) {background: var(--table-body-alt-back-color); } }:root {--table-body-hover-back-color: #90caf9; }table.hoverable tr:hover, table.hoverable tr:hover > td, table.hoverable tr:focus, table.hoverable tr:focus > td {background: var(--table-body-hover-back-color); }@media screen and (max-width: 500px) {table.hoverable tr:hover, table.hoverable tr:hover > td, table.hoverable tr:focus, table.hoverable tr:focus > td {background: var(--table-body-hover-back-color); } }:root {--mark-back-color: #3cb4e6;--mark-fore-color: #ffffff; }mark {background: var(--mark-back-color);color: var(--mark-fore-color);font-size: 0.95em;line-height: 1em;border-radius: var(--universal-border-radius);padding: calc(var(--universal-padding) / 4) var(--universal-padding); }mark.inline-block {display: inline-block;font-size: 1em;line-height: 1.4;padding: calc(var(--universal-padding) / 2) var(--universal-padding); }:root {--toast-back-color: #424242;--toast-fore-color: #fafafa; }.toast {position: fixed;bottom: calc(var(--universal-margin) * 3);left: 50%;transform: translate(-50%, -50%);z-index: 1111;color: var(--toast-fore-color);background: var(--toast-back-color);border-radius: calc(var(--universal-border-radius) * 16);padding: var(--universal-padding) calc(var(--universal-padding) * 3); }:root {--tooltip-back-color: #212121;--tooltip-fore-color: #fafafa; }.tooltip {position: relative;display: inline-block; }.tooltip:before, .tooltip:after {position: absolute;opacity: 0;clip: rect(0 0 0 0);-webkit-clip-path: inset(100%);clip-path: inset(100%);transition: all 0.3s;z-index: 1010;left: 50%; }.tooltip:not(.bottom):before, .tooltip:not(.bottom):after {bottom: 75%; }.tooltip.bottom:before, .tooltip.bottom:after {top: 75%; }.tooltip:hover:before, .tooltip:hover:after, .tooltip:focus:before, .tooltip:focus:after {opacity: 1;clip: auto;-webkit-clip-path: inset(0%);clip-path: inset(0%); }.tooltip:before {content: '';background: transparent;border: var(--universal-margin) solid transparent;left: calc(50% - var(--universal-margin)); }.tooltip:not(.bottom):before {border-top-color: #212121; }.tooltip.bottom:before {border-bottom-color: #212121; }.tooltip:after {content: attr(aria-label);color: var(--tooltip-fore-color);background: var(--tooltip-back-color);border-radius: var(--universal-border-radius);padding: var(--universal-padding);white-space: nowrap;transform: translateX(-50%); }.tooltip:not(.bottom):after {margin-bottom: calc(2 * var(--universal-margin)); }.tooltip.bottom:after {margin-top: calc(2 * var(--universal-margin)); }:root {--modal-overlay-color: rgba(0, 0, 0, 0.45);--modal-close-color: #e6007e;--modal-close-hover-color: #ffe97f; }[type="checkbox"].modal {height: 1px;width: 1px;margin: -1px;overflow: hidden;position: absolute;clip: rect(0 0 0 0);-webkit-clip-path: inset(100%);clip-path: inset(100%); }[type="checkbox"].modal + div {position: fixed;top: 0;left: 0;display: none;width: 100vw;height: 100vh;background: var(--modal-overlay-color); }[type="checkbox"].modal + div .card {margin: 0 auto;max-height: 50vh;overflow: auto; }[type="checkbox"].modal + div .card .modal-close {position: absolute;top: 0;right: 0;width: 1.75rem;height: 1.75rem;border-radius: var(--universal-border-radius);padding: var(--universal-padding);margin: 0;cursor: pointer;transition: background 0.3s; }[type="checkbox"].modal + div .card .modal-close:before {display: block;content: '\00D7';color: var(--modal-close-color);position: relative;font-family: sans-serif;font-size: 1.75rem;line-height: 1;text-align: center; }[type="checkbox"].modal + div .card .modal-close:hover, [type="checkbox"].modal + div .card .modal-close:focus {background: var(--modal-close-hover-color); }[type="checkbox"].modal:checked + div {display: flex;flex: 0 1 auto;z-index: 1200; }[type="checkbox"].modal:checked + div .card .modal-close {z-index: 1211; }:root {--collapse-label-back-color: #03234b;--collapse-label-fore-color: #ffffff;--collapse-label-hover-back-color: #3cb4e6;--collapse-selected-label-back-color: #3cb4e6;--collapse-border-color: var(--collapse-label-back-color);--collapse-selected-border-color: #ceecf8;--collapse-content-back-color: #ffffff;--collapse-selected-label-border-color: #3cb4e6; }.collapse {width: calc(100% - 2 * var(--universal-margin));opacity: 1;display: flex;flex-direction: column;margin: var(--universal-margin);border-radius: var(--universal-border-radius); }.collapse > [type="radio"], .collapse > [type="checkbox"] {height: 1px;width: 1px;margin: -1px;overflow: hidden;position: absolute;clip: rect(0 0 0 0);-webkit-clip-path: inset(100%);clip-path: inset(100%); }.collapse > label {flex-grow: 1;display: inline-block;height: 1.25rem;cursor: pointer;transition: background 0.2s;color: var(--collapse-label-fore-color);background: var(--collapse-label-back-color);border: 0.0714285714rem solid var(--collapse-selected-border-color);padding: calc(1.25 * var(--universal-padding)); }.collapse > label:hover, .collapse > label:focus {background: var(--collapse-label-hover-back-color); }.collapse > label + div {flex-basis: auto;height: 1px;width: 1px;margin: -1px;overflow: hidden;position: absolute;clip: rect(0 0 0 0);-webkit-clip-path: inset(100%);clip-path: inset(100%);transition: max-height 0.3s;max-height: 1px; }.collapse > :checked + label {background: var(--collapse-selected-label-back-color);border-color: var(--collapse-selected-label-border-color); }.collapse > :checked + label + div {box-sizing: border-box;position: relative;width: 100%;height: auto;overflow: auto;margin: 0;background: var(--collapse-content-back-color);border: 0.0714285714rem solid var(--collapse-selected-border-color);border-top: 0;padding: var(--universal-padding);clip: auto;-webkit-clip-path: inset(0%);clip-path: inset(0%);max-height: 100%; }.collapse > label:not(:first-of-type) {border-top: 0; }.collapse > label:first-of-type {border-radius: var(--universal-border-radius) var(--universal-border-radius) 0 0; }.collapse > label:last-of-type:not(:first-of-type) {border-radius: 0 0 var(--universal-border-radius) var(--universal-border-radius); }.collapse > label:last-of-type:first-of-type {border-radius: var(--universal-border-radius); }.collapse > :checked:last-of-type:not(:first-of-type) + label {border-radius: 0; }.collapse > :checked:last-of-type + label + div {border-radius: 0 0 var(--universal-border-radius) var(--universal-border-radius); }mark.tertiary {--mark-back-color: #3cb4e6; }mark.tag {padding: calc(var(--universal-padding)/2) var(--universal-padding);border-radius: 1em; }:root {--progress-back-color: #3cb4e6;--progress-fore-color: #555; }progress {display: block;vertical-align: baseline;-webkit-appearance: none;-moz-appearance: none;appearance: none;height: 0.75rem;width: calc(100% - 2 * var(--universal-margin));margin: var(--universal-margin);border: 0;border-radius: calc(2 * var(--universal-border-radius));background: var(--progress-back-color);color: var(--progress-fore-color); }progress::-webkit-progress-value {background: var(--progress-fore-color);border-top-left-radius: calc(2 * var(--universal-border-radius));border-bottom-left-radius: calc(2 * var(--universal-border-radius)); }progress::-webkit-progress-bar {background: var(--progress-back-color); }progress::-moz-progress-bar {background: var(--progress-fore-color);border-top-left-radius: calc(2 * var(--universal-border-radius));border-bottom-left-radius: calc(2 * var(--universal-border-radius)); }progress[value="1000"]::-webkit-progress-value {border-radius: calc(2 * var(--universal-border-radius)); }progress[value="1000"]::-moz-progress-bar {border-radius: calc(2 * var(--universal-border-radius)); }progress.inline {display: inline-block;vertical-align: middle;width: 60%; }:root {--spinner-back-color: #ddd;--spinner-fore-color: #555; }@keyframes spinner-donut-anim {0% {transform: rotate(0deg); }100% {transform: rotate(360deg); } }.spinner {display: inline-block;margin: var(--universal-margin);border: 0.25rem solid var(--spinner-back-color);border-left: 0.25rem solid var(--spinner-fore-color);border-radius: 50%;width: 1.25rem;height: 1.25rem;animation: spinner-donut-anim 1.2s linear infinite; }progress.primary {--progress-fore-color: #1976d2; }progress.secondary {--progress-fore-color: #d32f2f; }progress.tertiary {--progress-fore-color: #308732; }.spinner.primary {--spinner-fore-color: #1976d2; }.spinner.secondary {--spinner-fore-color: #d32f2f; }.spinner.tertiary {--spinner-fore-color: #308732; }span[class^='icon-'] {display: inline-block;height: 1em;width: 1em;vertical-align: -0.125em;background-size: contain;margin: 0 calc(var(--universal-margin) / 4); }span[class^='icon-'].secondary {-webkit-filter: invert(25%);filter: invert(25%); }span[class^='icon-'].inverse {-webkit-filter: invert(100%);filter: invert(100%); }span.icon-alert {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='8' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='16' x2='12' y2='16'%3E%3C/line%3E%3C/svg%3E"); }span.icon-bookmark {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'%3E%3C/path%3E%3C/svg%3E"); }span.icon-calendar {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E"); }span.icon-credit {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='1' y='4' width='22' height='16' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='1' y1='10' x2='23' y2='10'%3E%3C/line%3E%3C/svg%3E"); }span.icon-edit {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34'%3E%3C/path%3E%3Cpolygon points='18 2 22 6 12 16 8 16 8 12 18 2'%3E%3C/polygon%3E%3C/svg%3E"); }span.icon-link {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'%3E%3C/path%3E%3Cpolyline points='15 3 21 3 21 9'%3E%3C/polyline%3E%3Cline x1='10' y1='14' x2='21' y2='3'%3E%3C/line%3E%3C/svg%3E"); }span.icon-help {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'%3E%3C/path%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='17' x2='12' y2='17'%3E%3C/line%3E%3C/svg%3E"); }span.icon-home {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'%3E%3C/path%3E%3Cpolyline points='9 22 9 12 15 12 15 22'%3E%3C/polyline%3E%3C/svg%3E"); }span.icon-info {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='16' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='8' x2='12' y2='8'%3E%3C/line%3E%3C/svg%3E"); }span.icon-lock {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='11' rx='2' ry='2'%3E%3C/rect%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'%3E%3C/path%3E%3C/svg%3E"); }span.icon-mail {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z'%3E%3C/path%3E%3Cpolyline points='22,6 12,13 2,6'%3E%3C/polyline%3E%3C/svg%3E"); }span.icon-location {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'%3E%3C/path%3E%3Ccircle cx='12' cy='10' r='3'%3E%3C/circle%3E%3C/svg%3E"); }span.icon-phone {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z'%3E%3C/path%3E%3C/svg%3E"); }span.icon-rss {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 11a9 9 0 0 1 9 9'%3E%3C/path%3E%3Cpath d='M4 4a16 16 0 0 1 16 16'%3E%3C/path%3E%3Ccircle cx='5' cy='19' r='1'%3E%3C/circle%3E%3C/svg%3E"); }span.icon-search {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E"); }span.icon-settings {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'%3E%3C/circle%3E%3Cpath d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z'%3E%3C/path%3E%3C/svg%3E"); }span.icon-share {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='18' cy='5' r='3'%3E%3C/circle%3E%3Ccircle cx='6' cy='12' r='3'%3E%3C/circle%3E%3Ccircle cx='18' cy='19' r='3'%3E%3C/circle%3E%3Cline x1='8.59' y1='13.51' x2='15.42' y2='17.49'%3E%3C/line%3E%3Cline x1='15.41' y1='6.51' x2='8.59' y2='10.49'%3E%3C/line%3E%3C/svg%3E"); }span.icon-cart {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E"); }span.icon-upload {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'%3E%3C/path%3E%3Cpolyline points='17 8 12 3 7 8'%3E%3C/polyline%3E%3Cline x1='12' y1='3' x2='12' y2='15'%3E%3C/line%3E%3C/svg%3E"); }span.icon-user {background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2303234b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E"); }span.icon-st-update {background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PGcgZmlsbD0iIzAzMjM0YiI+PHBhdGggZD0iTTE3MC45MzQgNjQuNTY5bC0uMDQtLjA1NS0yOS4wNDkgNDAuMDM4LS4wNTcuMDc5aDE0Ljg2N2E1OS4zNjYgNTkuMzY2IDAgMCAxLTEuNDg4IDE1LjYxNWMtMS4xNTggNS4zMTgtMy44MDcgMTMuNDQ4LTkuODQ4IDIxLjk3Ny0yLjc2NiA0LjExOC02LjM3NSA3LjcyNi05LjIwOCAxMC40MDgtMy40MjYgMi44NTctNy40NjEgNi4wOTUtMTIgOC4zNzYtOC4xMjEgNC41NjgtMTcuODgxIDcuMTM4LTI4LjIyNSA3LjQzMi0xMC45MDcuMjQ4LTIwLjIwMS0yLjYxLTI2LjA3Mi01LjA1Mi04LjI4My0zLjQ3OS0xNC4xMTEtNy44MDctMTYuODUtMTAuMDc4LTEuMjU0LS45NTYtMi4yNS0xLjkwNy0zLjA1Ny0yLjY3NmEyOC42NjIgMjguNjYyIDAgMCAwLTEuMTU3LTEuMDY5IDE1OC44NzQgMTU4Ljg3NCAwIDAgMC0xLjQ3OS0xLjM2MmwtNC40MzUtMy45NTYgMy41NjkgNC44MS4xODMuMjQzYy4yLjI2My41NDguNzIyIDEuMDQ4IDEuMzg5LjI3Ni4zMzQuNTc5Ljc0Ny45MyAxLjIyNmwuMDA4LjAxYy42ODkuOTM5IDEuNTQ2IDIuMTA3IDIuNjY0IDMuMzIyIDMgMy41MzYgOC4xNzggOC44MDEgMTUuODA4IDEzLjgwMSA1Ljk2OSAzLjg2NiAxNS42NzIgOC45MDEgMjguMDAxIDEwLjkzNWE3OS4wNSA3OS4wNSAwIDAgMCAxMi40ODUuOTk4YzcuOTcgMCAxNS42NTEtMS4yMjggMjIuODI4LTMuNjQ5IDYuMzY2LTEuODc3IDEyLjE5Mi00Ljk4MSAxNy4wNTMtNy43NzEgNi4xNi0zLjkzNiAxMC44MTctNy41ODYgMTQuNjU0LTExLjQ4OCA4LjA4NC03Ljg5OSAxNC44ODQtMTcuOTEzIDE5LjE1LTI4LjE5OSAzLjI1OS03LjU5NCA1LjQ1Ni0xNS43MjcgNi41MjktMjQuMTc1bC4wNTUtLjQyNS4wODMtLjY0MUgyMDBsLTI5LjA2Ni00MC4wNjN6TTU4LjE1OSA5OS4yMzJsLTEyLjY1NS41NjNjLS4wOTctLjg4MS0uMTU5LTEuOTg2LS4yMjctMy40NzRhNTkuMTg0IDU5LjE4NCAwIDAgMSAxLjQ0Ni0xNi41NmMxLjE1Ny01LjMxNiAzLjgwNC0xMy40NDQgOS44NDgtMjEuOTc3IDIuMTY4LTMuMjI4IDUuMDA5LTYuNDQgOS4yMDgtMTAuNDE1IDMuNDEtMi44NDkgNy40MzItNi4wOCAxMi4wMDUtOC4zNzUgOC4xMTQtNC41NjggMTcuODctNy4xMzggMjguMjEzLTcuNDMyIDEwLjktLjI1IDIwLjE5NiAyLjYwNyAyNi4wNzIgNS4wNDUgOC4yNTggMy40NzMgMTQuMTA1IDcuODEyIDE2Ljg1NyAxMC4wOTEgMS4yNTcuOTUxIDIuMjUzIDEuOTA0IDMuMDU3IDIuNjczbC4wMTcuMDE2Yy40My40MTEuODAxLjc2NiAxLjEzNiAxLjA1MS40NzUuNDM4Ljg0MS43NzcgMS4wOTEgMS4wMWwuMTM4LjEyOC4yNDguMjI5IDQuMDQgMy42MTMtMy4xNjUtNC40NTZjLS4wNTgtLjA4My0uMzEyLS40MTctLjczLS45NzFsLS41MDctLjY3YTI4LjkyMiAyOC45MjIgMCAwIDEtLjkwMS0xLjE5MmwtLjAyLS4wMjdjLS42OS0uOTQ1LTEuNTQ4LTIuMTIxLTIuNjc3LTMuMzQ2LTMuMDAyLTMuNTM3LTguMTgyLTguODAzLTE1LjgxMy0xMy44MDEtNS45NjQtMy44NjUtMTUuNjYyLTguOS0yNy45OTctMTAuOTM1LTguNDg0LTEuMzYzLTIxLjQ5Ni0yLjAwOS0zNS4zMTMgMi42NTEtNi4zNTUgMS44OC0xMi4xODYgNC45ODMtMTcuMDU0IDcuNzcyLTYuMTYzIDMuOTQ0LTEwLjgyIDcuNTk1LTE0LjY1NCAxMS40ODgtOC4wNzkgNy44OTQtMTQuODgyIDE3LjkwOS0xOS4xNTUgMjguMi0zLjI2OCA3LjYyNC01LjQ2MyAxNS43NTctNi41MjMgMjQuMTczLS40MzYgMy4yODEtLjY0MiA1LjQyMS0uNjY0IDYuOTI2TDAgMTAxLjgzMWwzMC42ODMgMzguNzI3LjA0Mi4wNTMgMjcuMzgtNDEuMjk4LjA1NC0uMDgxeiIgc3R5bGU9ImZpbGw6ICNlNjAwN2U7Ii8+PC9nPjwvc3ZnPg0K); }span.icon-st-add {background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PGcgZmlsbD0iIzEzMjU0YSI+PHBhdGggZD0iTTEwMCAuMjEyQzQ0Ljg2OC4yMTIgMCA0NC44ODkgMCA5OS43ODhjMCA1NS4xMzIgNDQuODY4IDEwMCAxMDAgMTAwczEwMC00NC44NjggMTAwLTEwMEMyMDAgNDQuODg5IDE1NS4xMzIuMjEyIDEwMCAuMjEyem0wIDE4MS4xNjRjLTQ0Ljk3NCAwLTgxLjU4Ny0zNi42MTQtODEuNTg3LTgxLjU4NyAwLTQ0Ljc2MiAzNi42MTQtODEuMTY0IDgxLjU4Ny04MS4xNjQgNDQuOTk1IDAgODEuNTg3IDM2LjQwMiA4MS41ODcgODEuMTY0IDAgNDQuOTczLTM2LjU5MiA4MS41ODctODEuNTg3IDgxLjU4N3oiIHN0eWxlPSJmaWxsOiAjZTYwMDdlOyIvPjxwYXRoIGQ9Ik0xNDEuMSA4OC4xMjdoLTI5LjQzOVY1OC42ODhjMC02LjM5Mi01LjE4NS0xMS41OTgtMTEuNTk4LTExLjU5OC02LjQxMyAwLTExLjYxOSA1LjIwNi0xMS42MTkgMTEuNTk4djI5LjQzOUg1OC40NzZjLTYuMzkyIDAtMTEuNTk4IDUuMTg1LTExLjU5OCAxMS41OTggMCA2LjQxMyA1LjIwNiAxMS42MTkgMTEuNTk4IDExLjYxOWgyOS45Njh2MjkuOTY4YzAgNi4zOTIgNS4yMDYgMTEuNTk4IDExLjYxOSAxMS41OTggNi40MTMgMCAxMS41OTgtNS4yMDYgMTEuNTk4LTExLjU5OHYtMjkuOTY4SDE0MS4xYzYuMzkyIDAgMTEuNTk4LTUuMjA2IDExLjU5OC0xMS42MTkgMC02LjQxMy01LjIwNi0xMS41OTgtMTEuNTk4LTExLjU5OHoiIHN0eWxlPSJmaWxsOiAjZTYwMDdlOyIvPjwvZz48L3N2Zz4NCg==); }:root {--generic-border-color: rgba(0, 0, 0, 0.3);--generic-box-shadow: 0 0.2857142857rem 0.2857142857rem 0 rgba(0, 0, 0, 0.125), 0 0.1428571429rem 0.1428571429rem -0.1428571429rem rgba(0, 0, 0, 0.125); }.hidden {display: none !important; }.visually-hidden {position: absolute !important;width: 1px !important;height: 1px !important;margin: -1px !important;border: 0 !important;padding: 0 !important;clip: rect(0 0 0 0) !important;-webkit-clip-path: inset(100%) !important;clip-path: inset(100%) !important;overflow: hidden !important; }.bordered {border: 0.0714285714rem solid var(--generic-border-color) !important; }.rounded {border-radius: var(--universal-border-radius) !important; }.circular {border-radius: 50% !important; }.shadowed {box-shadow: var(--generic-box-shadow) !important; }.responsive-margin {margin: calc(var(--universal-margin) / 4) !important; }@media screen and (min-width: 500px) {.responsive-margin {margin: calc(var(--universal-margin) / 2) !important; } }@media screen and (min-width: 1280px) {.responsive-margin {margin: var(--universal-margin) !important; } }.responsive-padding {padding: calc(var(--universal-padding) / 4) !important; }@media screen and (min-width: 500px) {.responsive-padding {padding: calc(var(--universal-padding) / 2) !important; } }@media screen and (min-width: 1280px) {.responsive-padding {padding: var(--universal-padding) !important; } }@media screen and (max-width: 499px) {.hidden-sm {display: none !important; } }@media screen and (min-width: 500px) and (max-width: 1279px) {.hidden-md {display: none !important; } }@media screen and (min-width: 1280px) {.hidden-lg {display: none !important; } }@media screen and (max-width: 499px) {.visually-hidden-sm {position: absolute !important;width: 1px !important;height: 1px !important;margin: -1px !important;border: 0 !important;padding: 0 !important;clip: rect(0 0 0 0) !important;-webkit-clip-path: inset(100%) !important;clip-path: inset(100%) !important;overflow: hidden !important; } }@media screen and (min-width: 500px) and (max-width: 1279px) {.visually-hidden-md {position: absolute !important;width: 1px !important;height: 1px !important;margin: -1px !important;border: 0 !important;padding: 0 !important;clip: rect(0 0 0 0) !important;-webkit-clip-path: inset(100%) !important;clip-path: inset(100%) !important;overflow: hidden !important; } }@media screen and (min-width: 1280px) {.visually-hidden-lg {position: absolute !important;width: 1px !important;height: 1px !important;margin: -1px !important;border: 0 !important;padding: 0 !important;clip: rect(0 0 0 0) !important;-webkit-clip-path: inset(100%) !important;clip-path: inset(100%) !important;overflow: hidden !important; } }img[alt="ST logo"] { display: block; margin: auto; width: 75%; max-width: 250px; min-width: 71px; }img[alt="Cube logo"] { float: right; width: 30%; max-width: 10rem; min-width: 8rem; padding-right: 1rem;}.figure {display: block;margin-left: auto;margin-right: auto;text-align: center;}</style>
+  <link href="data:image/png;base64,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" rel="icon" type="image/x-icon" />
+</head>
+<body>
+<div class="row">
+<div class="col-sm-12 col-lg-4">
+<center>
+<h1 id="release-notes-for-stm32-cryptographic-middleware">Release Notes
+for STM32 Cryptographic middleware</h1>
+<p>Copyright © 2005-2026 STMicroelectronics<br />
+</p>
+<a href="https://www.st.com" class="logo"><img role="img" aria-label="ST logo" src="data:image/png;base64,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" alt="ST logo" /></a>
+</center>
+<h1 id="purpose">Purpose</h1>
+<ul>
+<li><p><strong>STM32 cryptographic middleware consists of libraries that
+include a comprehensive set of cryptographic algorithms implemented in
+firmware</strong> and are ready to use in all STM32 Series. The main
+algorithms are as follows:</p>
+<ul>
+<li><p><strong>Standard cipher algorithms</strong>:</p>
+<ul>
+<li>AES (CBC,CCM,CCM*,CFB,CTR,ECB,GCM,OFB,XTS,KeyWrap modes),</li>
+<li>SM4 (CBC,CFB,CTR,ECB,OFB), Chahcha20-Poly1305, Chacha20</li>
+</ul></li>
+<li><p><strong>Hash methods</strong>: SHA-1, SHA-2, SHA-3, SM3,
+SHAKE</p></li>
+<li><p><strong>Message Authentication Codes</strong>: HMAC, AES MAC,
+KMAC</p></li>
+<li><p><strong>Asymmetric algorithms</strong>: ECDSA, EdDSA, SM2, ECDH,
+RSA PKCS#1 v1.5, RSA PKCS#1 v2.2</p></li>
+<li><p><strong>Random generator</strong></p></li>
+<li><p><strong>Key Derivation Function</strong>: HKDF, X9.63</p></li>
+<li><p><strong>Post-quantum cryptography algorithms</strong>:</p>
+<ul>
+<li>Module-lattice based: ML-DSA, ML-KEM,</li>
+<li>Stateful hash-based: HBS-LMS, HBS-XMSS</li>
+</ul></li>
+</ul></li>
+<li><p>The cryptographic firmware library package is based on STM32Cube
+architecture.</p></li>
+</ul>
+<figure>
+<img role="img" aria-label="CryptographicArchitecture" src="data:image/png;base64,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" alt="CryptographicArchitecture" />
+<figcaption aria-hidden="true">CryptographicArchitecture</figcaption>
+</figure>
+<ul>
+<li><p>The library is optimized for STM32 series based on Cortex M0+,
+Cortex-M3, Cortex-M4, Cortex-M7, Cortex-M33, Cortex-M55 and
+Cortex-M85.</p></li>
+<li><p><strong>EABI</strong>: Cryptographic libraries are compatible
+with GCC, ARM, and EWARM compilers.</p></li>
+<li><p><strong>ACVP</strong>: Cryptographic algorithms and their
+components are validated by the NIST for each Cortex-M architecture, and
+for the fastest and smallest implementations.<br />
+The URL of validation reports stored on NIST portal are described in
+“Released Libraries” table</p></li>
+</ul>
+</div>
+<section id="update-history" class="col-sm-12 col-lg-8">
+<h1>Update History</h1>
+<div class="collapse">
+<input type="checkbox" id="collapse-section7" checked aria-hidden="true">
+<label for="collapse-section7" aria-hidden="true"><strong>V5.0.0 /
+15-May-2026</strong></label>
+<div>
+<h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>Symmetric cryptopgraphy
+<ul>
+<li>Improved AES performance.</li>
+<li>Added support for the KDF module: HKDF with SHA256/512, X9.63 KDF
+with SHA256 or SM3.</li>
+<li>Added support of AES-GCM with IV lengths other than 12 bytes.</li>
+<li>Added AES-CCM* mode.</li>
+</ul></li>
+<li>Asymmetric cryptography
+<ul>
+<li>ECC compressed keys: support both for compression and
+decompression</li>
+<li>EdDSA:
+<ul>
+<li>Support for HashEdDSA (also known as EdDSAph).</li>
+<li>Improved EdDSA security against fault attacks.</li>
+<li>Support for SM2 encryption/decryption (ECIES) and key exchange.</li>
+<li>ECC unified API and ECDH key generation :
+<ul>
+<li>Use the same functions for ECDSA, EdDSA, and SM2.</li>
+<li>Automatic algorithm selection based on the curve.</li>
+</ul></li>
+</ul></li>
+<li>ECC: add the option to configure RAM usage for a dedicated
+function.</li>
+<li>RSA: add support modular exponentiation with the private exponent
+for CRT or standard configuration only.</li>
+</ul></li>
+<li><strong>Support for Post-Quantum Cryptography algorithms</strong>
+<ul>
+<li>Lattice-based module: ML-DSA, ML-KEM.</li>
+<li>Stateful Hash : HBS-LMS, HBS-XMSS</li>
+</ul></li>
+<li><strong>FIPS 186-5 alignments</strong>
+<ul>
+<li>RSA PKCS#1 v1.5 and v2.2 using SHAKE128/256 as hash functions.</li>
+<li>SHAKE128/256 as mask generation function (MGF) for RSA PKCS#1
+v2.2.</li>
+<li>Deterministic ECDSA: additional optional function to call before the
+ECDSA signature generation function.</li>
+<li>Random generation with eXtra Random Bit (XRB) to avoid random data
+rejection when calling key or non-deterministic signature generation
+such as SM2 or ECDSA.</li>
+</ul></li>
+<li>Security Advisory TN1491 fixed: resolved Keccak XKCP SHA-3 reference
+implementation issue impact on STM32 products.</li>
+<li>Added unprocessed buffer in structures cmox_gcm_common_t and
+cmox_ctr_handle_t.</li>
+<li>Remove support for CRC.<br />
+</li>
+<li>Removed the “legacy_v3” folder which provided Cryptographic V3.x
+helpers wrappers.</li>
+<li>Moved cmox_small_config.h and cmox_fast_config.h to the “templates”
+folder.</li>
+<li>Moved cmox_low_level_template.c to the “interfaces” folder.</li>
+</ul>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Update of header files</li>
+<li>Updated libraries for STM32 supported Cortex-M families</li>
+</ul>
+<h2 id="components">Components</h2>
+<p><small>The components flagged by <span class="icon-st-update"></span>
+have changed since the previous release. <span class="icon-st-add"></span> are new.</small></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">ACVP - NIST Validation Program Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM0_CM0PLUS.a <span class="icon-st-update"></span></td>
+<td style="text-align: left;">v5.0.0.Build2</td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Small
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Fast
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM3.a <span class="icon-st-update"></span></td>
+<td style="text-align: left;">v5.0.0.Build2</td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Small
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Fast
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM4.a <span class="icon-st-update"></span></td>
+<td style="text-align: left;">v5.0.0.Build2</td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Small
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Fast
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM7.a <span class="icon-st-update"></span></td>
+<td style="text-align: left;">v5.0.0.Build2</td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Small
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Fast
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM33.a <span class="icon-st-update"></span></td>
+<td style="text-align: left;">v5.0.0.Build2</td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Small
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Fast
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM55.a <span class="icon-st-update"></span></td>
+<td style="text-align: left;">v5.0.0.Build2</td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Small
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Fast
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM85.a <span class="icon-st-update"></span></td>
+<td style="text-align: left;">v5.0.0.Build2</td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Small
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://wiki.st.com/stm32mcu/wiki/Security:Cryptographic_Library_Certifications">Fast
+Implementation</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers">Development Toolchains and
+Compilers</h2>
+<ul>
+<li><p>IAR Embedded Workbench for ARM (EWARM) toolchain V9.40.1 +
+ST-Link</p></li>
+<li><p>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.39 + ST-Link</p></li>
+<li><p>STM32CubeIDE v1.19.0</p></li>
+</ul>
+<h2 id="backward-compatibility">Backward Compatibility</h2>
+<ul>
+<li>API fully backward compatible with STM32 Cryptographic library
+V4.x.x</li>
+</ul>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section6" aria-hidden="true">
+<label for="collapse-section6" aria-hidden="true"><strong>V4.0.5 /
+16-July-2025</strong></label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
+<ul>
+<li>Added Cortex-M55 library and support for STM32N6 series.</li>
+</ul>
+<h2 id="contents-1">Contents</h2>
+<ul>
+<li>Update of header files</li>
+<li>New library for Cortex-M55 STM32 devices</li>
+</ul>
+<h2 id="components-1">Components</h2>
+<p><small>The components flagged by <span class="icon-st-update"></span>
+have changed since the previous release. <span class="icon-st-add"></span> are new.</small></p>
+<table>
+<caption>Released Libraries :<br />
+</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">ACVP - NIST Validation Program URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM0_CM0PLUS.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13549">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13550">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM3.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13546">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13547">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM4.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13544">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13545">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM7.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13542">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13543">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM33.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13548">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13493">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM55.a <span class="icon-st-add"></span></td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><strong>No ACVP validation
+performed</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Note: CRC pheripheral is used by STM32 cryptographic library.</p>
+<h2 id="known-limitations-1">Known Limitations</h2>
+<ul>
+<li>Cortex-M55 library has not been ACVP validated</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-1">Development Toolchains
+and Compilers</h2>
+<ul>
+<li><p>IAR Embedded Workbench for ARM (EWARM) toolchain V9.20.1 +
+ST-Link</p></li>
+<li><p>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.37 + ST-Link</p></li>
+<li><p>STM32CubeIDE v1.12.0</p></li>
+</ul>
+<h2 id="backward-compatibility-1">Backward Compatibility</h2>
+<ul>
+<li><p>API break with STM32 Cryptographic library V3.</p></li>
+<li><p>To ease the migration of applicative source code compatible with
+Cryptographic V3.x, helpers are provideded in “legacy_v3”
+folder</p></li>
+</ul>
+<h2 id="dependencies-1">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section5" aria-hidden="true">
+<label for="collapse-section5" aria-hidden="true"><strong>V4.0.4 /
+12-May-2025</strong></label>
+<div>
+<h2 id="main-changes-2">Main Changes</h2>
+<ul>
+<li>Added Cortex-M55 library and support for STM32N6 series.</li>
+</ul>
+<h2 id="contents-2">Contents</h2>
+<ul>
+<li>Update of header files</li>
+<li>New library for Cortex-M55 STM32 devices</li>
+</ul>
+<h2 id="components-2">Components</h2>
+<p><small>The components flagged by <span class="icon-st-update"></span>
+have changed since the previous release. <span class="icon-st-add"></span> are new.</small></p>
+<table>
+<caption>Released Libraries :<br />
+</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">ACVP - NIST Validation Program URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM0_CM0PLUS.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13549">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13550">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM3.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13546">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13547">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM4.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13544">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13545">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM7.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13542">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13543">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM33.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13548">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13493">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM55.a <span class="icon-st-add"></span></td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><strong>No ACVP validation
+performed</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Note: CRC pheripheral is used by STM32 cryptographic library.</p>
+<h2 id="known-limitations-2">Known Limitations</h2>
+<ul>
+<li>Cortex-M55 library has not been ACVP validated</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-2">Development Toolchains
+and Compilers</h2>
+<ul>
+<li><p>IAR Embedded Workbench for ARM (EWARM) toolchain V9.20.1 +
+ST-Link</p></li>
+<li><p>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.37 + ST-Link</p></li>
+<li><p>STM32CubeIDE v1.12.0</p></li>
+</ul>
+<h2 id="backward-compatibility-2">Backward Compatibility</h2>
+<ul>
+<li><p>API break with STM32 Cryptographic library V3.</p></li>
+<li><p>To ease the migration of applicative source code compatible with
+Cryptographic V3.x, helpers are provideded in “legacy_v3”
+folder</p></li>
+</ul>
+<h2 id="dependencies-2">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section4" aria-hidden="true">
+<label for="collapse-section4" aria-hidden="true"><strong>V4.0.3 /
+22-March-2024</strong></label>
+<div>
+<h2 id="main-changes-3">Main Changes</h2>
+<ul>
+<li>Added support for STM32H7R/H7S and STM32U0 series.</li>
+</ul>
+<h2 id="contents-3">Contents</h2>
+<ul>
+<li>Update of header files</li>
+</ul>
+<h2 id="components-3">Components</h2>
+<p><small>The components flagged by <span class="icon-st-update"></span>
+have changed since the previous release. <span class="icon-st-add"></span> are new.</small></p>
+<table>
+<caption>Released Libraries :<br />
+</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">ACVP - NIST Validation Program URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM0_CM0PLUS.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13549">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13550">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM3.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13546">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13547">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM4.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13544">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13545">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM7.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13542">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13543">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM33.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13548">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13493">Fastest
+Implementation</a></td>
+</tr>
+</tbody>
+</table>
+<p>Note: CRC pheripheral is used by STM32 cryptographic library.</p>
+<h2 id="known-limitations-3">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-3">Development Toolchains
+and Compilers</h2>
+<ul>
+<li><p>IAR Embedded Workbench for ARM (EWARM) toolchain V9.20.1 +
+ST-Link</p></li>
+<li><p>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.37 + ST-Link</p></li>
+<li><p>STM32CubeIDE v1.12.0</p></li>
+</ul>
+<h2 id="backward-compatibility-3">Backward Compatibility</h2>
+<ul>
+<li><p>API break with STM32 Cryptographic library V3.</p></li>
+<li><p>To ease the migration of applicative source code compatible with
+Cryptographic V3.x, helpers are provideded in “legacy_v3”
+folder</p></li>
+</ul>
+<h2 id="dependencies-3">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section3" aria-hidden="true">
+<label for="collapse-section3" aria-hidden="true"><strong>V4.0.2 /
+13-March-2023</strong></label>
+<div>
+<h2 id="main-changes-4">Main Changes</h2>
+<ul>
+<li>Added support for STM32H5 and STM32WBA series.</li>
+</ul>
+<h2 id="contents-4">Contents</h2>
+<ul>
+<li>Update of header files</li>
+</ul>
+<h2 id="components-4">Components</h2>
+<p><small>The components flagged by <span class="icon-st-update"></span>
+have changed since the previous release. <span class="icon-st-add"></span> are new.</small></p>
+<table>
+<caption>Released Libraries :<br />
+</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">ACVP - NIST Validation Program URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM0_CM0PLUS.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13549">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13550">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM3.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13546">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13547">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM4.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13544">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13545">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM7.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13542">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13543">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM33.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13548">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13493">Fastest
+Implementation</a></td>
+</tr>
+</tbody>
+</table>
+<p>Note: CRC pheripheral is used by STM32 cryptographic library.</p>
+<h2 id="known-limitations-4">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-4">Development Toolchains
+and Compilers</h2>
+<ul>
+<li><p>IAR Embedded Workbench for ARM (EWARM) toolchain V9.20.1 +
+ST-Link</p></li>
+<li><p>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.37 + ST-Link</p></li>
+<li><p>STM32CubeIDE v1.12.0</p></li>
+</ul>
+<h2 id="backward-compatibility-4">Backward Compatibility</h2>
+<ul>
+<li><p>API break with STM32 Cryptographic library V3.</p></li>
+<li><p>To ease the migration of applicative source code compatible with
+Cryptographic V3.x, helpers are provideded in “legacy_v3”
+folder</p></li>
+</ul>
+<h2 id="dependencies-4">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section2" aria-hidden="true">
+<label for="collapse-section2" aria-hidden="true"><strong>V4.0.1 /
+2-July-2021</strong></label>
+<div>
+<h2 id="main-changes-5">Main Changes</h2>
+<ul>
+<li>Update of licensing declaration : license terms defined in
+LICENSE.txt stored at the root of the component</li>
+</ul>
+<h2 id="contents-5">Contents</h2>
+<ul>
+<li>Update of header files</li>
+</ul>
+<h2 id="components-5">Components</h2>
+<p><small>The components flagged by <span class="icon-st-update"></span>
+have changed since the previous release. <span class="icon-st-add"></span> are new.</small></p>
+<table>
+<caption>Released Libraries :<br />
+</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">ACVP - NIST Validation Program URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM0_CM0PLUS.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13549">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13550">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM3.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13546">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13547">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM4.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13544">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13545">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM7.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13542">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13543">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM33.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13548">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13493">Fastest
+Implementation</a></td>
+</tr>
+</tbody>
+</table>
+<p>Note: CRC pheripheral is used by STM32 cryptographic library.</p>
+<h2 id="known-limitations-5">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-5">Development Toolchains
+and Compilers</h2>
+<ul>
+<li><p>IAR Embedded Workbench for ARM (EWARM) toolchain V8.50.6 +
+ST-Link</p></li>
+<li><p>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.32.1</p></li>
+<li><p>STM32CubeIDE v1.6.0</p></li>
+</ul>
+<h2 id="backward-compatibility-5">Backward Compatibility</h2>
+<ul>
+<li><p>API break with STM32 Cryptographic library V3.</p></li>
+<li><p>To ease the migration of applicative source code compatible with
+Cryptographic V3.x, helpers are provideded in “legacy_v3”
+folder</p></li>
+</ul>
+<h2 id="dependencies-5">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true">
+<label for="collapse-section1" aria-hidden="true"><strong>V4.0.0 /
+7-May-2021</strong></label>
+<div>
+<h2 id="main-changes-6">Main Changes</h2>
+<ul>
+<li>Official release of Cryptographic Middleware V4 for all STM32
+Series</li>
+</ul>
+<h2 id="contents-6">Contents</h2>
+<ul>
+<li>Cryptographic Firmware Library libraries available for all STM32
+Series running on Cortex M0/M0+, Cortex-M3, Cortex-M4, Cortex-M7 and
+Cortex-M33</li>
+<li>Main Cryptographic algorithms and their individual components are
+validated by the NIST, following ACVP program.</li>
+</ul>
+<h2 id="components-6">Components</h2>
+<p><small>The components flagged by <span class="icon-st-update"></span>
+have changed since the previous release. <span class="icon-st-add"></span> are new.</small></p>
+<table>
+<caption>Released Libraries :<br />
+</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">ACVP - NIST Validation Program URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM0_CM0PLUS.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13549">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13550">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM3.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13546">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13547">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM4.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13544">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13545">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM7.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13542">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13543">Fastest
+Implementation</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">libSTM32Cryptographic_CM33.a</td>
+<td style="text-align: left;">v4.0.0.Build1</td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13548">Smallest
+implementation</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/details?product=13493">Fastest
+Implementation</a></td>
+</tr>
+</tbody>
+</table>
+<p>Note: CRC pheripheral is used by STM32 cryptographic library.</p>
+<h2 id="known-limitations-6">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-6">Development Toolchains
+and Compilers</h2>
+<ul>
+<li><p>IAR Embedded Workbench for ARM (EWARM) toolchain V8.50.6 +
+ST-Link</p></li>
+<li><p>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.32.1</p></li>
+<li><p>STM32CubeIDE v1.6.0</p></li>
+</ul>
+<h2 id="backward-compatibility-6">Backward Compatibility</h2>
+<ul>
+<li><p>API break with STM32 Cryptographic library V3.</p></li>
+<li><p>To ease the migration of applicative source code compatible with
+Cryptographic V3.x, helpers are provideded in “legacy_v3”
+folder</p></li>
+</ul>
+<h2 id="dependencies-6">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+</section>
+</div>
+<footer class="sticky">
+For complete documentation on <strong>Security framework for STM32
+series</strong> , visit: <a href="https://www.st.com/stm32trust">STM32
+Trust</a>
+</footer>
+</body>
+</html>
